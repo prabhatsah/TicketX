@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import path, { dirname, resolve } from "path";
+import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoutes";
 
