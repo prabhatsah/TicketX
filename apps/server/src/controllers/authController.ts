@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { Prisma } from "../prisma";
 
-const JWT_SECRET = process.env.JWT_SECRET || "yoursecret";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export const signup = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -23,8 +23,14 @@ export const signup = async (req: Request, res: Response) => {
       expiresIn: "15m",
     });
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // send only on HTTPS
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 15, // 15 minutes
+    });
+
     res.json({
-      token,
       user: { id: user.id, email: user.email, name: user.name },
       message: "User created successfully.",
     });
@@ -43,15 +49,28 @@ export const signin = async (req: Request, res: Response) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
+    console.log("Setting jwt", JWT_SECRET);
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
       expiresIn: "15m",
     });
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // send only on HTTPS
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 15, // 15 minutes
+    });
+
     res.json({
-      token,
       user: { id: user.id, email: user.email, name: user.name },
+      message: "Login successful.",
     });
   } catch (err) {
-    res.status(500).json({ error: "Signin failed" });
+    res.status(500).json({ error: err.message, message: "Signin failed" });
   }
+};
+
+export const logout = (req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.json({ message: "Logged out" });
 };
