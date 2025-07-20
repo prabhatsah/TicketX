@@ -1,8 +1,8 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import * as React from "react";
-import { Bot, GalleryVerticalEnd, Tickets } from "lucide-react";
-
+import { Bot, GalleryVerticalEnd, Home, Tickets } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -24,20 +24,31 @@ const data = {
     email: "barik@gmail.com",
     avatar: "/avatars/shadcn.jpg",
   },
+  nav: [
+    {
+      title: "Home",
+      url: "/",
+      icon: Home,
+    },
+  ],
   navMain: [
     {
       title: "Customer Support",
-      url: "dashboard",
+      url: "/customer-support/dashboard",
       icon: Tickets,
-      isActive: true,
       items: [
         {
+          title: "Dashboard",
+          url: "/customer-support/dashboard",
+          isActive: true,
+        },
+        {
           title: "Open tickets",
-          url: "abc",
+          url: "/customer-support/open-tickets",
         },
         {
           title: "Closed tickets",
-          url: "#",
+          url: "/customer-support/closed-tickets",
         },
       ],
     },
@@ -76,28 +87,36 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <div className="flex justify-start items-center">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <GalleryVerticalEnd className="size-4" />
                 </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium text-xl">TicketX</span>
-                  {/* <span className="text-xs">AI enabled ticketing tool</span> */}
+                <div className="flex flex-col leading-none">
+                  <span className="font-medium text-lg">CollabX</span>
+                  {/* <span className="text-xs">A complete solution</span> */}
                 </div>
-              </a>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary items={data.nav} currentPath={pathname} />
+        <NavMain items={data.navMain} currentPath={pathname} />
+        <NavSecondary
+          items={data.navSecondary}
+          className="mt-auto"
+          currentPath={pathname}
+        />
       </SidebarContent>
 
       <SidebarFooter>

@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoutes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import customerSupportRoutes from "./routes/customerSupport";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(__dirname, "../../../.env") });
@@ -23,6 +24,7 @@ app.use(
 );
 
 app.use("/api/auth", authRoutes);
+app.use("/api/customer-support", customerSupportRoutes);
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

@@ -43,7 +43,7 @@ export function LoginForm({
         description: "Redirecting to your dashboard...",
       });
 
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: any) {
       toast.error("Login failed", {
         description: err.message || "Invalid credentials",

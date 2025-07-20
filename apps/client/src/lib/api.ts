@@ -1,28 +1,41 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-console.log(API_URL);
+import { toast } from "sonner";
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
+export async function apiFetch<T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  const res = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(options.headers || {}),
+      ...(options?.headers || {}),
     },
-    credentials: "include", //must for cookies
+    credentials: "include", // Important for secure cookie auth
   });
 
-  if (res.status === 401) {
-    if (typeof window !== "undefined") {
-      window.location.href = "/signin";
+  console.log("res from apifetch - ", res);
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        // Prevent multiple toasts
+        toast.dismiss();
+        toast.error("Session expired.", {
+          description: "Redirecting to login page.",
+        });
+
+        setTimeout(() => {
+          window.location.href = "/signin";
+        }, 2500); // give time for toast to show
+      }
     }
-    throw new Error("Unauthorized");
+    const errorText = await res.text();
+    throw new Error(`API error ${res.status}: ${errorText}`);
   }
 
   const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.error || "Something went wrong");
-  }
 
   return data;
 }

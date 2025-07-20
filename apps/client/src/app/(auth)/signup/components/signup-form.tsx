@@ -14,6 +14,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { signup } from "@/lib/auth";
 
 export function SignupForm({
   className,
@@ -26,6 +28,32 @@ export function SignupForm({
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const submitHandler = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!name || !email || !password) {
+      toast.error("Missing fields", {
+        description: "Please enter all the fields.",
+      });
+      return;
+    }
+
+    try {
+      await signup(name, email, password);
+
+      toast.success("User created.", {
+        description: "Redirecting to your signin page...",
+      });
+
+      router.push("/");
+    } catch (err: any) {
+      toast.error("Signup failed.", {
+        description: err.message,
+      });
+      setError(err.message);
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -36,7 +64,7 @@ export function SignupForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={submitHandler}>
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
                 <Button variant="outline" className="w-full">
