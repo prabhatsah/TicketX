@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { DashboardSummaryResponse } from "@/types";
 
 export const description = "An interactive area chart";
 
@@ -137,7 +138,15 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function ChartAreaInteractive() {
+interface TicketsPerDayChartProps {
+  ticketsPerDay: DashboardSummaryResponse["ticketsPerDay"];
+}
+
+export function ChartAreaInteractive({
+  ticketsPerDay,
+}: TicketsPerDayChartProps) {
+  console.log(ticketsPerDay);
+
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState("90d");
 
@@ -147,19 +156,38 @@ export function ChartAreaInteractive() {
     }
   }, [isMobile]);
 
-  const filteredData = chartData.filter((item) => {
-    const date = new Date(item.date);
-    const referenceDate = new Date("2024-06-30");
-    let daysToSubtract = 90;
-    if (timeRange === "30d") {
-      daysToSubtract = 30;
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7;
-    }
-    const startDate = new Date(referenceDate);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
-    return date >= startDate;
-  });
+  // const filteredData = chartData.filter((item) => {
+  //   const date = new Date(item.date);
+  //   const referenceDate = new Date("2024-06-30");
+  //   let daysToSubtract = 90;
+  //   if (timeRange === "30d") {
+  //     daysToSubtract = 30;
+  //   } else if (timeRange === "7d") {
+  //     daysToSubtract = 7;
+  //   }
+  //   const startDate = new Date(referenceDate);
+  //   startDate.setDate(startDate.getDate() - daysToSubtract);
+  //   return date >= startDate;
+  // });
+
+  const filteredData = ticketsPerDay
+    .filter((item) => {
+      const date = new Date(item.date);
+      const referenceDate = new Date("2024-06-30");
+      let daysToSubtract = 90;
+      if (timeRange === "30d") {
+        daysToSubtract = 30;
+      } else if (timeRange === "7d") {
+        daysToSubtract = 7;
+      }
+      const startDate = new Date(referenceDate);
+      startDate.setDate(startDate.getDate() - daysToSubtract);
+      return date >= startDate;
+    })
+    .map((item) => ({
+      date: item.date,
+      Ticket: item.count, // Rename `count` to `ticket`
+    }));
 
   return (
     <Card className="@container/card">
@@ -268,19 +296,19 @@ export function ChartAreaInteractive() {
               }
             />
             <Area
-              dataKey="mobile"
+              dataKey="Ticket"
               type="natural"
               fill="url(#fillMobile)"
               stroke="var(--color-mobile)"
               stackId="a"
             />
-            <Area
+            {/* <Area
               dataKey="desktop"
               type="natural"
               fill="url(#fillDesktop)"
               stroke="var(--color-desktop)"
               stackId="a"
-            />
+            /> */}
           </AreaChart>
         </ChartContainer>
       </CardContent>

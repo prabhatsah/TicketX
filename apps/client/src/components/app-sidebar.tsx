@@ -36,11 +36,11 @@ const data = {
       title: "Customer Support",
       url: "/customer-support/dashboard",
       icon: Tickets,
+      isActive: true,
       items: [
         {
           title: "Dashboard",
           url: "/customer-support/dashboard",
-          isActive: true,
         },
         {
           title: "Open tickets",

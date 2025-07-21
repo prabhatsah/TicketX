@@ -36,7 +36,7 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
     }));
 
     //severity/priority distribution
-    const severityDist = await Prisma.ticket.groupBy({
+    const priorityDist = await Prisma.ticket.groupBy({
       by: ["priority"],
       _count: true,
     });
@@ -59,7 +59,7 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
       openTickets,
       resolvedTickets,
       ticketsPerDay,
-      severityDist,
+      priorityDist,
       typeDist,
       statusDist,
     });

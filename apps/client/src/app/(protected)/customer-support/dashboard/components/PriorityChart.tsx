@@ -20,45 +20,46 @@ import {
 
 import { DashboardSummaryResponse } from "@/types";
 
-interface StatusPieChartProps {
-  statusDist: DashboardSummaryResponse["statusDist"];
+export const description = "A pie chart with a label list";
+
+interface PriorityPieChartProps {
+  priorityDist: DashboardSummaryResponse["priorityDist"];
 }
 
-export function StatusChart({ statusDist }: StatusPieChartProps) {
-  console.log(statusDist);
+export function PriorityChart({ priorityDist }: PriorityPieChartProps) {
+  console.log(priorityDist);
 
-  const total = statusDist.reduce((sum, s) => sum + s._count, 0);
+  const total = priorityDist.reduce((sum, s) => sum + s._count, 0);
 
-  const statusColors: Record<string, string> = {
-    New: "var(--chart-1)",
-    In_progress: "var(--chart-2)",
-    Resolved: "var(--chart-3)",
-    Assigned: "var(--chart-4)",
+  const priorityColors: Record<string, string> = {
+    Low: "var(--chart-1)",
+    Medium: "var(--chart-2)",
+    High: "var(--chart-3)",
   };
 
-  const chartData = statusDist.map(({ status, _count }) => ({
-    status,
+  const chartData = priorityDist.map(({ priority, _count }) => ({
+    priority,
     count: _count,
-    fill: statusColors[status] ?? "var(--default)",
+    fill: priorityColors[priority] ?? "var(--default)",
   }));
 
   const chartConfig: ChartConfig = chartData.reduce(
     (acc, item) => {
-      acc[item.status] = {
-        label: item.status.replaceAll("_", " "),
+      acc[item.priority] = {
+        label: item.priority.replaceAll("_", " "),
         color: item.fill,
       };
       return acc;
     },
     {
-      count: { label: "Status" },
+      count: { label: "priority" },
     } as ChartConfig
   );
 
   return (
     <Card className="flex flex-col w-full">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Status-Ticket Distribution</CardTitle>
+        <CardTitle>Priority-Ticket Distribution</CardTitle>
         <CardDescription>All time data</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
@@ -72,7 +73,7 @@ export function StatusChart({ statusDist }: StatusPieChartProps) {
             />
             <Pie data={chartData} dataKey="count">
               <LabelList
-                dataKey="status"
+                dataKey="priority"
                 className="fill-background"
                 stroke="none"
                 fontSize={12}
@@ -84,22 +85,22 @@ export function StatusChart({ statusDist }: StatusPieChartProps) {
           </PieChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col  gap-2 text-sm">
+      <CardFooter className="flex-col gap-2 text-sm">
         <div>
-        {chartData.map((item) => {
-          const percentage = Math.round((item.count / total) * 100);
-          return (
-            <div key={item.status} className="flex items-center gap-2">
-              <div
-                className="h-3 w-3 rounded"
-                style={{ backgroundColor: item.fill }}
-              />
-              <span>
-                {chartConfig[item.status]?.label} - {percentage}%
-              </span>
-            </div>
-          );
-        })}
+          {chartData.map((item) => {
+            const percentage = Math.round((item.count / total) * 100);
+            return (
+              <div key={item.priority} className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded"
+                  style={{ backgroundColor: item.fill }}
+                />
+                <span>
+                  {chartConfig[item.priority]?.label} - {percentage}%
+                </span>
+              </div>
+            );
+          })}
         </div>
       </CardFooter>
     </Card>

@@ -9,14 +9,24 @@ import {
 import { Badge } from "@/components/ui/badge";
 import React from "react";
 import { IconTrendingUp } from "@tabler/icons-react";
+import { TicketSummary } from "@/types/ticket";
 
-const TotalTicketsWidget = () => {
+const TotalTicketsWidget: React.FC<TicketSummary> = ({
+  totalTickets = 1,
+  openTickets = 0,
+  resolvedTickets = 0,
+  escalatedTickets = 0,
+}) => {
+  const resolvedPercentage = Math.floor((resolvedTickets / totalTickets) * 100);
+  const openPercentage = Math.ceil((openTickets / totalTickets) * 100);
+  const escalatedPercentage = (escalatedTickets / totalTickets) * 100;
+
   return (
     <Card className="@container/card flex flex-col justify-between">
       <CardHeader>
         <CardDescription>Total Tickets</CardDescription>
         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-          565
+          {totalTickets}
         </CardTitle>
         <CardAction>
           <Badge variant="outline">
@@ -26,28 +36,76 @@ const TotalTicketsWidget = () => {
         </CardAction>
       </CardHeader>
       <CardFooter className="flex-col items-start gap-1.5 text-sm">
-        <div className="flex w-full">
-          <div className="bg-success h-2 w-[20%] rounded-l-full"></div>
-          <div className="bg-warning h-2 w-[50%]"></div>
-          <div className="bg-destructive h-2 w-[30%] rounded-r-full"></div>
+        <div className="flex w-full overflow-hidden h-2">
+          {resolvedPercentage > 0 && (
+            <div
+              className={`bg-success h-2`}
+              style={{
+                width: `${resolvedPercentage}%`,
+                borderTopLeftRadius: "9999px",
+                borderBottomLeftRadius: "9999px",
+                borderTopRightRadius:
+                  openPercentage === 0 && escalatedPercentage === 0
+                    ? "9999px"
+                    : "",
+                borderBottomRightRadius:
+                  openPercentage === 0 && escalatedPercentage === 0
+                    ? "9999px"
+                    : "",
+              }}
+            />
+          )}
+          {openPercentage > 0 && (
+            <div
+              className={`bg-warning h-2`}
+              style={{
+                width: `${openPercentage}%`,
+                borderTopLeftRadius: resolvedPercentage === 0 ? "9999px" : "",
+                borderBottomLeftRadius:
+                  resolvedPercentage === 0 ? "9999px" : "",
+                borderTopRightRadius: escalatedPercentage === 0 ? "9999px" : "",
+                borderBottomRightRadius:
+                  escalatedPercentage === 0 ? "9999px" : "",
+              }}
+            />
+          )}
+          {escalatedPercentage > 0 && (
+            <div
+              className={`bg-destructive h-2`}
+              style={{
+                width: `${escalatedPercentage}%`,
+                borderTopLeftRadius:
+                  resolvedPercentage === 0 && openPercentage === 0
+                    ? "9999px"
+                    : "",
+                borderBottomLeftRadius:
+                  resolvedPercentage === 0 && openPercentage === 0
+                    ? "9999px"
+                    : "",
+                borderTopRightRadius: "9999px",
+                borderBottomRightRadius: "9999px",
+              }}
+            />
+          )}
         </div>
+
         <div className="flex justify-between w-full">
           <div>
-            <span>20%</span>
+            <span>{resolvedPercentage}%</span>
             <div className="flex items-center gap-2">
               <div className="bg-success h-3 w-3 rounded"></div>
               <span>Resolved</span>
             </div>
           </div>
           <div>
-            <span>50%</span>
+            <span>{openPercentage}%</span>
             <div className="flex items-center gap-2">
               <div className="bg-warning h-3 w-3 rounded"></div>
               <span>Open</span>
             </div>
           </div>
           <div>
-            <span>30%</span>
+            <span>{escalatedPercentage}%</span>
             <div className="flex items-center gap-2">
               <div className="bg-destructive h-3 w-3 rounded"></div>
               <span>Escalated</span>

@@ -15,8 +15,6 @@ export async function apiFetch<T>(
     credentials: "include", // Important for secure cookie auth
   });
 
-  console.log("res from apifetch - ", res);
-
   if (!res.ok) {
     if (res.status === 401) {
       if (typeof window !== "undefined") {
