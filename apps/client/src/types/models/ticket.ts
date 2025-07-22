@@ -18,7 +18,7 @@ export interface Ticket {
   type: TicketType;
   created_at: string;
   issue_date: string;
-  closed_at?: string;
+  closed_at?: string | null;
 }
 
 export interface TicketSummary {
