@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// === Auth / User schema begins ===
+// === Signup schema begins ===
 model User {
   id        String   @id @default(uuid()) @db.Uuid
   email     String   @unique
@@ -16,16 +16,70 @@ model User {
   role      Role     @default(USER)
   createdAt DateTime @default(now())
 
-  // Reverse relations
-  createdTickets      Ticket[]              @relation("TicketCreator")
-  assignedTickets     Ticket[]              @relation("TicketAssignee")
+  createdTickets      Ticket[]                  @relation("TicketCreator")
+  assignedTickets     Ticket[]                  @relation("TicketAssignee")
   comments            TicketComment[]
-  uploads             TicketAttachment[]    @relation("UploaderRelation")
+  uploads             TicketAttachment[]        @relation("UploaderRelation")
   assignedHistories   TicketAssignmentHistory[] @relation("AssigneeRelation")
   assignedByHistories TicketAssignmentHistory[] @relation("AssignerRelation")
   activityLogs        TicketActivityLog[]
 
+  memberships  Membership[]
+  invitesSent  Invite[]     @relation("UserSentInvites")
+  invitedViaId String?      @unique
+  invitedVia   Invite?      @relation("UserWasInvitedWith", fields: [invitedViaId], references: [id])
+
   @@map("user")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships Membership[]
+  invites     Invite[]
+  tickets     Ticket[]
+
+  @@map("organization")
+}
+
+model Membership {
+  id             String @id @default(cuid())
+  userId         String @db.Uuid
+  organizationId String
+  role           Role
+
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, organizationId])
+  @@map("membership")
+}
+
+model Invite {
+  id    String @id @default(cuid())
+  email String
+  token String @unique
+
+  invitedById String?   @db.Uuid
+  invitedBy   User?   @relation("UserSentInvites", fields: [invitedById], references: [id])
+  invitedUser User?   @relation("UserWasInvitedWith")
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  role Role
+
+  acceptedAt DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  @@map("invite")
 }
 
 enum Role {
@@ -33,46 +87,42 @@ enum Role {
   ADMIN
   SUPPORT
 }
-// === Auth / User schema ends ===
 
+// === Signup schema ends ===
 
 // === Ticketing schema begins ===
 model Ticket {
-  id                 String     @id @default(uuid()) @db.Uuid // UUID as primary key
-  ticket_no          BigInt     @unique                      // Unique human-readable ticket number
-  subject            String
-  description        String
+  id          String         @id @default(uuid()) @db.Uuid
+  ticket_no   BigInt         @unique
+  subject     String
+  description String
+  status      TicketStatus
+  priority    TicketPriority
+  type        TicketType
 
-  status             TicketStatus  // Enum: 'New', 'Assigned', 'In progress', 'On hold', 'Resolved', 'Closed'
-  priority           TicketPriority // Enum: 'Low', 'Medium', 'High'
-  type               TicketType     // Enum: 'Feature', 'Bug', 'Incident'
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  issue_date DateTime  @db.Timestamptz(6)
+  closed_at  DateTime? @db.Timestamptz(6)
 
-  created_at         DateTime   @default(now()) @db.Timestamptz(6)
-  issue_date         DateTime   @db.Timestamptz(6)
-  closed_at          DateTime?  @db.Timestamptz(6)
+  creator_id          String  @db.Uuid
+  current_assignee_id String? @db.Uuid
 
-  creator_id         String     @db.Uuid
-  current_assignee_id String?   @db.Uuid
-  group_id           String[]   @db.Uuid
-  account_id         String     @db.Uuid
-  application_id     String     @db.Uuid
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
-  // relations
-  creator            User    @relation("TicketCreator", fields: [creator_id], references: [id])
-  assignee           User?   @relation("TicketAssignee", fields: [current_assignee_id], references: [id])
-  comments           TicketComment[]
-  attachments        TicketAttachment[]
-  assignmentHistory  TicketAssignmentHistory[]
-  activityLogs       TicketActivityLog[]
+  creator           User                      @relation("TicketCreator", fields: [creator_id], references: [id])
+  assignee          User?                     @relation("TicketAssignee", fields: [current_assignee_id], references: [id])
+  comments          TicketComment[]
+  attachments       TicketAttachment[]
+  assignmentHistory TicketAssignmentHistory[]
+  activityLogs      TicketActivityLog[]
 
   // Indexes
   @@index([status])
   @@index([priority])
   @@index([type])
-
   // Composite (multi-field) indexes
   @@index([status, priority])
-
   @@map("ticket")
 }
 
@@ -100,106 +150,95 @@ enum TicketType {
 
 // === Ticketing schema ends ===
 
-
-
 // === Ticket_comment schema begins ===
 
 model TicketComment {
-  id         String   @id @default(uuid()) @db.Uuid           // PK (UUID)
-  ticket_id  String   @db.Uuid                                // FK → Ticket.id
-  user_id    String   @db.Uuid                                // FK → User.id
-  comment    String                                           // Comment text
-  created_at DateTime @default(now()) @db.Timestamptz(6)      // Timestamp
+  id         String   @id @default(uuid()) @db.Uuid // PK (UUID)
+  ticket_id  String   @db.Uuid // FK → Ticket.id
+  user_id    String   @db.Uuid // FK → User.id
+  comment    String // Comment text
+  created_at DateTime @default(now()) @db.Timestamptz(6) // Timestamp
 
   // Relations
-  ticket     Ticket   @relation(fields: [ticket_id], references: [id])
-  user       User     @relation(fields: [user_id], references: [id])
+  ticket      Ticket             @relation(fields: [ticket_id], references: [id])
+  user        User               @relation(fields: [user_id], references: [id])
   attachments TicketAttachment[]
 
   // Indexes
   @@index([ticket_id])
   @@index([user_id])
-
   @@map("ticket_comments")
 }
 
 // === Ticket_comment schema ends ===
 
-
 // === Attchments schema ends ===
 
 model TicketAttachment {
-  id           String   @id @default(uuid()) @db.Uuid // PK as UUID (industry standard)
-  ticket_id    String   @db.Uuid                     // FK → Ticket(id)
-  comment_id   String?  @db.Uuid                     // Nullable FK → TicketComment(id)
-  uploader_id  String   @db.Uuid                     // FK → User(id)
+  id          String  @id @default(uuid()) @db.Uuid // PK as UUID (industry standard)
+  ticket_id   String  @db.Uuid // FK → Ticket(id)
+  comment_id  String? @db.Uuid // Nullable FK → TicketComment(id)
+  uploader_id String  @db.Uuid // FK → User(id)
 
-  file_type    String                                // MIME type (varchar)
-  file_name    String                                // File name (text)
-  file_url     String                                // File URL (text)
-  uploaded_at  DateTime @default(now()) @db.Timestamptz(6)
+  file_type   String // MIME type (varchar)
+  file_name   String // File name (text)
+  file_url    String // File URL (text)
+  uploaded_at DateTime @default(now()) @db.Timestamptz(6)
 
   // Relations
-  ticket       Ticket   @relation(fields: [ticket_id], references: [id])
-  comment      TicketComment? @relation(fields: [comment_id], references: [id])
-  uploader     User     @relation("UploaderRelation", fields: [uploader_id], references: [id])
+  ticket   Ticket         @relation(fields: [ticket_id], references: [id])
+  comment  TicketComment? @relation(fields: [comment_id], references: [id])
+  uploader User           @relation("UploaderRelation", fields: [uploader_id], references: [id])
 
   // Indexes
   @@index([ticket_id])
   @@index([comment_id])
   @@index([uploader_id])
   @@index([ticket_id, comment_id])
-
   @@map("ticket_attachments")
 }
 
 // === Attchments schema ends ===
 
-
-
 // === Ticket_assign_history schema begins ===
 
 model TicketAssignmentHistory {
-  id           String   @id @default(uuid()) @db.Uuid          // PK as UUID
-  ticket_id    String   @db.Uuid                               // FK → Ticket(id)
-  assignee_id  String   @db.Uuid                               // FK → User(id)
-  assigner_id  String   @db.Uuid                               // FK → User(id)
-  assigned_at  DateTime @default(now()) @db.Timestamptz(6)
-  comment      String
+  id          String   @id @default(uuid()) @db.Uuid // PK as UUID
+  ticket_id   String   @db.Uuid // FK → Ticket(id)
+  assignee_id String   @db.Uuid // FK → User(id)
+  assigner_id String   @db.Uuid // FK → User(id)
+  assigned_at DateTime @default(now()) @db.Timestamptz(6)
+  comment     String
 
   // Relations
-  ticket       Ticket   @relation(fields: [ticket_id], references: [id])
-  assignee     User     @relation("AssigneeRelation", fields: [assignee_id], references: [id])
-  assigner     User     @relation("AssignerRelation", fields: [assigner_id], references: [id])
+  ticket   Ticket @relation(fields: [ticket_id], references: [id])
+  assignee User   @relation("AssigneeRelation", fields: [assignee_id], references: [id])
+  assigner User   @relation("AssignerRelation", fields: [assigner_id], references: [id])
 
   // Indexes
   @@index([ticket_id])
   @@index([assignee_id])
   @@index([assigner_id])
-
   @@map("ticket_assignment_history")
 }
 
-
 // === Ticket_assign_history schema ends ===
-
 
 // === Ticket_log_history schema begins ===
 
 model TicketActivityLog {
-  id          String   @id @default(uuid()) @db.Uuid           // PK as UUID
-  ticket_id   String   @db.Uuid                                // FK → Ticket(id)
-  user_id     String   @db.Uuid                                // FK → User(id)
+  id          String       @id @default(uuid()) @db.Uuid // PK as UUID
+  ticket_id   String       @db.Uuid // FK → Ticket(id)
+  user_id     String       @db.Uuid // FK → User(id)
   action_type ActivityType
-  action_time DateTime @default(now()) @db.Timestamptz(6)
+  action_time DateTime     @default(now()) @db.Timestamptz(6)
 
   // Relations
-  ticket      Ticket   @relation(fields: [ticket_id], references: [id])
-  user        User     @relation(fields: [user_id], references: [id])
+  ticket Ticket @relation(fields: [ticket_id], references: [id])
+  user   User   @relation(fields: [user_id], references: [id])
 
   // Indexes
   @@index([ticket_id])
-
   @@map("ticket_activity_logs")
 }
 
