@@ -170,7 +170,7 @@ export function ChartAreaInteractive({
   //   return date >= startDate;
   // });
 
-  const filteredData = ticketsPerDay
+  const filteredData = ticketsPerDay?
     .filter((item) => {
       const date = new Date(item.date);
       const referenceDate = new Date("2024-06-30");

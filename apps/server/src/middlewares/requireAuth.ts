@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import { SessionUser } from "@/auth";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -9,11 +10,25 @@ export const requireAuth = (
   next: NextFunction
 ) => {
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  if (!token) return res.status(401).json({ error: "Unauthorized1" });
 
   try {
-    const user = jwt.verify(token, JWT_SECRET);
-    req.user = user; // Attach to request
+    const decoded = jwt.verify(token, JWT_SECRET) as Partial<SessionUser>;
+    console.log("decoded - ", decoded);
+
+    // Validate that all required properties exist
+    if (
+      !decoded.userId ||
+      !decoded.email ||
+      !decoded.name ||
+      !decoded.orgId ||
+      !decoded.orgName ||
+      !decoded.role
+    ) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    req.userInfo = decoded as SessionUser;
     next();
   } catch (err) {
     return res.status(401).json({ error: "Invalid token" });

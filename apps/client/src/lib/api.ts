@@ -15,25 +15,31 @@ export async function apiFetch<T>(
     credentials: "include", // Important for secure cookie auth
   });
 
-  if (!res.ok) {
-    if (res.status === 401) {
-      if (typeof window !== "undefined") {
-        // Prevent multiple toasts
-        toast.dismiss();
-        toast.error("Session expired.", {
-          description: "Redirecting to login page.",
-        });
+  // console.log("api fetch with endpoint - ", endpoint);
+  // console.log("api fetch with data - ", res);
+  // const d = await res.json();
+  // console.log("api fetch with data1 - ", d);
 
-        setTimeout(() => {
-          window.location.href = "/signin";
-        }, 2500); // give time for toast to show
-      }
-    }
-    const errorText = await res.text();
-    throw new Error(`API error ${res.status}: ${errorText}`);
-  }
+  // if (!res.ok) {
+  //   if (res.status === 401) {
+  //     if (typeof window !== "undefined") {
+  //       // Prevent multiple toasts
+  //       toast.dismiss();
+  //       toast.error("Session expired.", {
+  //         description: "Redirecting to login page.",
+  //       });
+
+  //       setTimeout(() => {
+  //         window.location.href = "/signin";
+  //       }, 2500); // give time for toast to show
+  //     }
+  //   }
+  //   const errorText = await res.text();
+  //   throw new Error(`API error ${res.status}: ${errorText}`);
+  // }
 
   const data = await res.json();
 
   return data;
+  //return res;
 }

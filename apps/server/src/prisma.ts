@@ -8,11 +8,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(__dirname, "../../../.env") });
 
 declare global {
+  // Prevent multiple instances in dev with hot reload
   var prisma: PrismaClient | undefined;
 }
 
 export const Prisma =
-  global.prisma ||
+  global.prisma ??
   new PrismaClient({
     log: ["error"],
   });

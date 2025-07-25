@@ -1,16 +1,16 @@
-import express from "express";
+import express, { Application } from "express";
 import dotenv from "dotenv";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoutes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import customerSupportRoutes from "./routes/customerSupport";
+import customerSupportRoutes from "./routes/customerSupportRoutes";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(__dirname, "../../../.env") });
 
-const app = express();
+const app: Application = express();
 
 app.use(express.json());
 app.use(cookieParser());

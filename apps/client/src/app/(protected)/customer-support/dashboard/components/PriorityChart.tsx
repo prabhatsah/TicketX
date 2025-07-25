@@ -29,7 +29,7 @@ interface PriorityPieChartProps {
 export function PriorityChart({ priorityDist }: PriorityPieChartProps) {
   console.log(priorityDist);
 
-  const total = priorityDist.reduce((sum, s) => sum + s._count, 0);
+  const total = priorityDist?.reduce((sum, s) => sum + s._count, 0);
 
   const priorityColors: Record<string, string> = {
     Low: "var(--chart-1)",
@@ -37,13 +37,13 @@ export function PriorityChart({ priorityDist }: PriorityPieChartProps) {
     High: "var(--chart-3)",
   };
 
-  const chartData = priorityDist.map(({ priority, _count }) => ({
+  const chartData = priorityDist?.map(({ priority, _count }) => ({
     priority,
     count: _count,
     fill: priorityColors[priority] ?? "var(--default)",
   }));
 
-  const chartConfig: ChartConfig = chartData.reduce(
+  const chartConfig: ChartConfig = chartData?.reduce(
     (acc, item) => {
       acc[item.priority] = {
         label: item.priority.replaceAll("_", " "),
@@ -87,7 +87,7 @@ export function PriorityChart({ priorityDist }: PriorityPieChartProps) {
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div>
-          {chartData.map((item) => {
+          {chartData?.map((item) => {
             const percentage = Math.round((item.count / total) * 100);
             return (
               <div key={item.priority} className="flex items-center gap-2">

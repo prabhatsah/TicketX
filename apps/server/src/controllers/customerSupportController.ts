@@ -1,6 +1,12 @@
 import { Request, Response } from "express";
 import { Prisma } from "../prisma";
 import { subDays, startOfDay } from "date-fns";
+import { APIError } from "@/api/api";
+
+type RawTicketPerDay = {
+  date: Date;
+  count: bigint;
+};
 
 export const getDashboardSummary = async (req: Request, res: Response) => {
   try {
@@ -25,8 +31,9 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
     //tickets per day (last 90 days)
     const startDate = subDays(new Date(), 90);
 
-    const rawTicketsPerDay =
-      await Prisma.$queryRaw`select DATE_TRUNC('day'::text, "created_at"::timestamptz) as date, COUNT(*) as count from ticket where "created_at" >= ${startDate} GROUP BY 
+    const rawTicketsPerDay = await Prisma.$queryRaw<
+      RawTicketPerDay[]
+    >`select DATE_TRUNC('day'::text, "created_at"::timestamptz) as date, COUNT(*) as count from ticket where "created_at" >= ${startDate} GROUP BY 
     DATE_TRUNC('day'::text, "created_at"::timestamptz) ORDER BY date ASC`;
 
     // Convert BigInt to Number
@@ -65,6 +72,6 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log("Dashboard error:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json(<APIError>{ message: "Internal server error" });
   }
 };

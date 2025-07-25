@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "CommonJS",
+    "lib": ["DOM", "ES2021"],
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["types/*"]
+    },
+    "typeRoots": ["types", "node_modules/@types"],
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["types", "apps/server", "apps/client"],
+  "exclude": ["node_modules", "dist", ".next"]
+}

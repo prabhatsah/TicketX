@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { Bot, GalleryVerticalEnd, Home, Tickets } from "lucide-react";
+import { Bot, GalleryVerticalEnd, Home, Tickets, User } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -26,7 +26,7 @@ const data = {
   },
   nav: [
     {
-      title: "Home",
+      title: "Dashboard",
       url: "/",
       icon: Home,
     },
@@ -74,6 +74,11 @@ const data = {
   ],
   navSecondary: [
     {
+      title: "User Management",
+      url: "/user-management",
+      icon: User,
+    },
+    {
       title: "Settings",
       url: "#",
       icon: IconSettings,
@@ -96,7 +101,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <div className="flex justify-start items-center">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <div className="bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <GalleryVerticalEnd className="size-4" />
                 </div>
                 <div className="flex flex-col leading-none">
@@ -109,14 +114,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        <NavSecondary items={data.nav} currentPath={pathname} />
-        <NavMain items={data.navMain} currentPath={pathname} />
-        <NavSecondary
-          items={data.navSecondary}
-          className="mt-auto"
-          currentPath={pathname}
-        />
+      <SidebarContent className="flex flex-col justify-between overflow-hidden">
+        <div>
+          <NavSecondary items={data.nav} currentPath={pathname} />
+          <NavMain items={data.navMain} currentPath={pathname} />
+        </div>
+        <div>
+          <NavSecondary
+            items={data.navSecondary}
+            className="mt-auto"
+            currentPath={pathname}
+          />
+        </div>
       </SidebarContent>
 
       <SidebarFooter>

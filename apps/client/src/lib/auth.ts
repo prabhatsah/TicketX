@@ -1,13 +1,18 @@
+import { LoginResult } from "@shared/api/auth";
 import { apiFetch } from "./api";
 
-export async function login(email: string, password: string) {
+export async function login(
+  email: string,
+  password: string
+): Promise<LoginResult> {
   const res = await apiFetch("/api/auth/signin", {
     method: "POST",
     body: JSON.stringify({ email, password }),
     credentials: "include", // allow cookies to be sent/received
   });
+  console.log("Login res : ", res);
 
-  return res.user;
+  return res;
 }
 
 export async function signup(name: string, email: string, password: string) {

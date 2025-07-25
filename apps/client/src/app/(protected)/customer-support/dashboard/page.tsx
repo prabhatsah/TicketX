@@ -10,10 +10,14 @@ import { StatusChart } from "./components/StatusChart";
 import { useEffect } from "react";
 import { useLoading } from "@/context/LoadingContext";
 import { useDashboardSummary } from "@/hooks/useDashboardSummary";
+import { useSession } from "@/hooks/use-session";
 
 export default function Page() {
   const { data, error, isLoading } = useDashboardSummary();
   const { setLoading } = useLoading();
+
+  const { session } = useSession();
+  console.log("session data - ", session);
 
   useEffect(() => {
     setLoading(isLoading);
