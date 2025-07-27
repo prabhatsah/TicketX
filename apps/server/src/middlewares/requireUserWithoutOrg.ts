@@ -10,12 +10,12 @@ export const requireUserWithoutOrg = (
   next: NextFunction
 ) => {
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  if (!token) return res.status(401).json({ error: "Unauthorized2" });
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
-    //  Accept if user is authenticated but has not selected org yet
+    //Accept if user is authenticated but has not selected org yet
     if (!decoded.orgId) {
       req.userInfo = decoded;
       return next();

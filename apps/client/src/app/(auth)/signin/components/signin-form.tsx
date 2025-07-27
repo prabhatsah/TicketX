@@ -11,27 +11,29 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { login } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 import OrgSelectorModal from "@/components/OrgSelectorModal";
-import { useSession } from "@/hooks/use-session";
-import { LoginResult } from "@shared/api/auth";
-import { Organization } from "@shared/models/org";
+
+import { LoginResult, SessionUser } from "@shared/api/auth";
+import { OrgSummary } from "@shared/models/org";
+import { useSession } from "@/context/session-context";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { refreshSession, setSelectedOrg } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { setSession } = useSession(); // custom hook
-  const [orgOptions, setOrgOptions] = useState([]);
-  const [pendingUser, setPendingUser] = useState(null);
+
+  const [orgOptions, setOrgOptions] = useState<OrgSummary[]>([]);
+  const [pendingUser, setPendingUser] = useState<SessionUser | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   const submitHandler = async (e: React.FormEvent) => {
@@ -46,20 +48,13 @@ export function LoginForm({
 
     try {
       const res: LoginResult = await login(email, password);
-      console.log("response - ", res);
 
       if (res.requiresOrgSelection) {
-        // Multiple orgs — open modal
         setPendingUser(res.user);
         setOrgOptions(res.organizations);
         setModalOpen(true);
       } else {
-        // Single org — proceed
-        setSession({
-          user: res.user,
-          org: res.organization,
-        });
-        console.log("session set with data", res);
+        await refreshSession(); //  fetch /me and set global session
 
         router.push("/");
       }
@@ -77,10 +72,9 @@ export function LoginForm({
     }
   };
 
-  const handleOrgSelect = async (org: Organization) => {
-    //debugger;
+  const handleOrgSelect = async (org: OrgSummary) => {
     if (pendingUser) {
-      await setSession({ user: pendingUser, org });
+      await setSelectedOrg(org.id); //properly persist org switch on server and update session
       setModalOpen(false);
       router.push("/");
     }

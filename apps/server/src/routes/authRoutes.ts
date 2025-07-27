@@ -7,7 +7,7 @@ import {
   selectOrg,
   switchOrg,
   me,
-} from "../controllers/authController";
+} from "../controllers/authControllers";
 import { requireAuth } from "../middlewares/requireAuth";
 import { requireUserWithoutOrg } from "../middlewares/requireUserWithoutOrg";
 
@@ -20,9 +20,10 @@ router.post("/orgSignup", orgSignup);
 router.post("/select-org", requireUserWithoutOrg, selectOrg);
 
 // POST /api/auth/switchOrg
-router.post("/switch-org", switchOrg);
+router.post("/switch-org", requireAuth, switchOrg);
 
 // POST /api/auth/signup
+// Disabled direct signup. Users sign up via /orgSignup or invite-only flow.
 //router.post("/signup", signup);
 
 // POST /api/auth/signin
@@ -32,11 +33,6 @@ router.post("/signin", signin);
 router.get("/logout", logout);
 
 // GET /api/auth/me after authenticating user
-// router.get("/me", requireAuth, (req, res) => {
-//   console.log(req.userInfo);
-
-//   res.json({ userInfo: req.userInfo });
-// });
 router.get("/me", requireAuth, me);
 
 export default router;

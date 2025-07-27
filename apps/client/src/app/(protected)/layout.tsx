@@ -9,6 +9,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { LoadingProvider } from "@/context/LoadingContext";
+import { SessionProvider } from "@/context/session-context";
 import { Bell } from "lucide-react";
 
 export default function DashboardLayout({
@@ -22,7 +23,7 @@ export default function DashboardLayout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="bg-background ">
-          <header className="border-b flex h-[3.5rem] mt-1 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper">
+          <header className="sticky top-0 z-50 bg-background border-b flex h-[3.5rem] mt-1 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper">
             <div className="flex justify-between w-full">
               <div className="flex items-center gap-2 px-4">
                 <SidebarTrigger className="-ml-1" />

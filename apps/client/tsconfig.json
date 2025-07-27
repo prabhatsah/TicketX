@@ -14,9 +14,14 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"], //  Points to `client/src/`
-      "@shared/*": ["../../types/*"] //  Points to shared types at root
-    }
+      "@/*": [
+        "src/*"
+      ], //  Points to `client/src/`
+      "@shared/*": [
+        "../../types/*"
+      ] //  Points to shared types at root
+    },
+    "isolatedModules": true
   },
   "include": [
     "src",
@@ -25,5 +30,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

@@ -14,7 +14,7 @@ export const requireAuth = (
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as Partial<SessionUser>;
-    console.log("decoded - ", decoded);
+    // console.log("Decoded in requireAuth", decoded);
 
     // Validate that all required properties exist
     if (
@@ -29,6 +29,7 @@ export const requireAuth = (
     }
 
     req.userInfo = decoded as SessionUser;
+
     next();
   } catch (err) {
     return res.status(401).json({ error: "Invalid token" });

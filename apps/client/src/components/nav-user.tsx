@@ -47,7 +47,6 @@ export function NavUser({
       });
       router.push("/signin");
     } catch (err) {
-      console.log("Error - ", err);
       toast.error("Logout failed", err);
     }
   }

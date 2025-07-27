@@ -145,7 +145,7 @@ interface TicketsPerDayChartProps {
 export function ChartAreaInteractive({
   ticketsPerDay,
 }: TicketsPerDayChartProps) {
-  console.log(ticketsPerDay);
+  
 
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState("90d");

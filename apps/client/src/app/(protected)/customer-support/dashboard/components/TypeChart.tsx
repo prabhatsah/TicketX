@@ -27,7 +27,6 @@ interface TypePieChartProps {
 }
 
 export function TypeChart({ typeDist }: TypePieChartProps) {
-  console.log(typeDist);
   const total = typeDist.reduce((sum, s) => sum + s._count, 0);
 
   const typeColors: Record<string, string> = {

@@ -10,7 +10,6 @@ export async function login(
     body: JSON.stringify({ email, password }),
     credentials: "include", // allow cookies to be sent/received
   });
-  console.log("Login res : ", res);
 
   return res;
 }
@@ -29,5 +28,4 @@ export async function logout() {
   const res = await apiFetch("/api/auth/logout", {
     method: "GET",
   });
-  console.log(res);
 }

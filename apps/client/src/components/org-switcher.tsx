@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,28 +10,36 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Building2, Check, ChevronsUpDown } from "lucide-react";
-import { useSession } from "@/hooks/use-session";
-
-const organizations = [
-  { id: "1", name: "Acme Corp", role: "Admin" },
-  { id: "2", name: "TechStart Inc", role: "Member" },
-  { id: "3", name: "Global Solutions", role: "Manager" },
-];
+import { OrgSummary } from "@shared/models/org";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useSession } from "@/context/session-context";
 
 export function OrgSwitcher() {
-  //const [selectedOrg, setSelectedOrg] = useState(organizations[0]);
-  const { session, setSelectedOrg, isLoading } = useSession();
-  console.log("session - ", session);
+  const router = useRouter();
+  const { session, setSwitchOrg, isLoading } = useSession();
 
-  if (isLoading || !session) return null;
+  const currentOrg = session?.currentOrg;
+  const sortedOrgs = session?.organizations;
 
-  const { organizations, org: selectedOrg } = session;
+  const handleOrgSwitch = async (org: OrgSummary) => {
+    if (!currentOrg || org.id === currentOrg.id) return;
 
-  // const handleOrgSwitch = (org: OrgSummary) => {
-  //   if (org.id !== selectedOrg.id) {
-  //     setSelectedOrg(org.id);
-  //   }
-  // };
+    try {
+      await setSwitchOrg(org.id); //  Switch org on server and update session
+      toast.success("Organisation switched", {
+        description: `Switched to ${org?.name}`,
+      });
+      router.refresh(); //  Reload current route to reflect changes
+    } catch (err: any) {
+      console.log(err);
+      toast.error("Orgnization switch failed!", {
+        description: err.message || "An unexpected error occurred",
+      });
+    }
+  };
+
+  if (isLoading || !currentOrg || !sortedOrgs) return null;
 
   return (
     <DropdownMenu>
@@ -40,10 +47,11 @@ export function OrgSwitcher() {
         <Button
           variant="outline"
           className="w-[200px] justify-between bg-transparent"
+          aria-label="Switch organization"
         >
           <div className="flex items-center">
             <Building2 className="mr-2 h-4 w-4" />
-            <span className="truncate">{selectedOrg?.name}</span>
+            <span className="truncate">{currentOrg?.name}</span>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -51,10 +59,10 @@ export function OrgSwitcher() {
       <DropdownMenuContent className="w-[200px]" align="end">
         <DropdownMenuLabel>Organizations</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {organizations?.map((org) => (
+        {sortedOrgs?.map((org) => (
           <DropdownMenuItem
             key={org.id}
-            onClick={() => setSelectedOrg(org)}
+            onClick={() => handleOrgSwitch(org)}
             className="flex items-center justify-between"
           >
             <div className="flex items-center">
@@ -64,7 +72,7 @@ export function OrgSwitcher() {
                 <div className="text-xs text-muted-foreground">{org.role}</div>
               </div>
             </div>
-            {selectedOrg.id === org.id && <Check className="h-4 w-4" />}
+            {currentOrg?.id === org.id && <Check className="h-4 w-4" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

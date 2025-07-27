@@ -27,8 +27,6 @@ interface PriorityPieChartProps {
 }
 
 export function PriorityChart({ priorityDist }: PriorityPieChartProps) {
-  console.log(priorityDist);
-
   const total = priorityDist?.reduce((sum, s) => sum + s._count, 0);
 
   const priorityColors: Record<string, string> = {

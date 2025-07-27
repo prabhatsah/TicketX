@@ -8,6 +8,7 @@ export type APIError = {
 export type SuccessResponse<T> = {
   message: string;
   data: T;
+  success?: boolean;
 };
 
 export type LoginApiResponse = LoginResponse | APIError;

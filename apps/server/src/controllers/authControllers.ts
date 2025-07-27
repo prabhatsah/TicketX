@@ -147,7 +147,11 @@ export const selectOrg = async (
 
 export const switchOrg = async (req: Request, res: Response) => {
   const { orgId } = req.body;
-  const user = req.user as SessionUser;
+  const user = req.userInfo as SessionUser;
+
+  if (!user || !user.userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   const membership = await Prisma.membership.findUnique({
     where: {
@@ -156,7 +160,20 @@ export const switchOrg = async (req: Request, res: Response) => {
         organizationId: orgId,
       },
     },
+    include: {
+      organization: true,
+    },
   });
+
+  // const membership = await Prisma.membership.findFirst({
+  //   where: {
+  //     userId: user.userId,
+  //     organizationId: orgId,
+  //   },
+  //   include: {
+  //     organization: true,
+  //   },
+  // });
 
   if (!membership) {
     return res
@@ -167,8 +184,10 @@ export const switchOrg = async (req: Request, res: Response) => {
   const token = jwt.sign(
     {
       userId: user.userId,
+      name: user.name,
       email: user.email,
       orgId,
+      orgName: membership.organization.name,
       role: membership.role,
     } satisfies JwtPayload,
     JWT_SECRET,
@@ -311,13 +330,11 @@ export const signin = async (
 };
 
 export const logout = (req: Request, res: Response) => {
-  console.log("Logout", res.cookie);
   res.clearCookie("token");
   res.json({ message: "Logged out" });
 };
 
 export const me = async (req: Request, res: Response) => {
-  console.log("req", req.userInfo);
   const user = await Prisma.user.findUnique({
     where: { id: req.userInfo.userId },
     include: {
@@ -326,9 +343,8 @@ export const me = async (req: Request, res: Response) => {
       },
     },
   });
-  console.log("user", user);
 
-  if (!user) return res.status(401).json({ error: "Unauthorized" });
+  if (!user) return res.status(401).json({ error: "Unauthorized0" });
 
   const organizations: OrgSummary[] = user.memberships.map((m) => ({
     id: m.organizationId,
@@ -342,12 +358,14 @@ export const me = async (req: Request, res: Response) => {
 
   return res.json({
     success: true,
-    userInfo: {
-      id: user.id,
-      name: user.name ?? "",
-      email: user.email,
+    data: {
+      userInfo: {
+        id: user.id,
+        name: user.name ?? "",
+        email: user.email,
+      },
+      currentOrg: selectedOrg,
+      organizations,
     },
-    org: selectedOrg,
-    organizations,
   });
 };

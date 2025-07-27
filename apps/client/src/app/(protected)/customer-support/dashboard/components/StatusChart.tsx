@@ -25,8 +25,6 @@ interface StatusPieChartProps {
 }
 
 export function StatusChart({ statusDist }: StatusPieChartProps) {
-  console.log(statusDist);
-
   const total = statusDist.reduce((sum, s) => sum + s._count, 0);
 
   const statusColors: Record<string, string> = {
@@ -86,20 +84,20 @@ export function StatusChart({ statusDist }: StatusPieChartProps) {
       </CardContent>
       <CardFooter className="flex-col  gap-2 text-sm">
         <div>
-        {chartData.map((item) => {
-          const percentage = Math.round((item.count / total) * 100);
-          return (
-            <div key={item.status} className="flex items-center gap-2">
-              <div
-                className="h-3 w-3 rounded"
-                style={{ backgroundColor: item.fill }}
-              />
-              <span>
-                {chartConfig[item.status]?.label} - {percentage}%
-              </span>
-            </div>
-          );
-        })}
+          {chartData.map((item) => {
+            const percentage = Math.round((item.count / total) * 100);
+            return (
+              <div key={item.status} className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded"
+                  style={{ backgroundColor: item.fill }}
+                />
+                <span>
+                  {chartConfig[item.status]?.label} - {percentage}%
+                </span>
+              </div>
+            );
+          })}
         </div>
       </CardFooter>
     </Card>

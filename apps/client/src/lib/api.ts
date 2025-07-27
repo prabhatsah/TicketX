@@ -15,31 +15,37 @@ export async function apiFetch<T>(
     credentials: "include", // Important for secure cookie auth
   });
 
-  // console.log("api fetch with endpoint - ", endpoint);
-  // console.log("api fetch with data - ", res);
-  // const d = await res.json();
-  // console.log("api fetch with data1 - ", d);
+  if (!res.ok) {
+    if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        // Prevent multiple toasts
+        toast.dismiss();
+        toast.error("Session expired.", {
+          description: "Redirecting to login page.",
+        });
 
-  // if (!res.ok) {
-  //   if (res.status === 401) {
-  //     if (typeof window !== "undefined") {
-  //       // Prevent multiple toasts
-  //       toast.dismiss();
-  //       toast.error("Session expired.", {
-  //         description: "Redirecting to login page.",
-  //       });
+        setTimeout(() => {
+          window.location.href = "/signin";
+        }, 2500); // give time for toast to show
+      }
+    }
 
-  //       setTimeout(() => {
-  //         window.location.href = "/signin";
-  //       }, 2500); // give time for toast to show
-  //     }
-  //   }
-  //   const errorText = await res.text();
-  //   throw new Error(`API error ${res.status}: ${errorText}`);
-  // }
+    // Try to extract JSON error
+    let errorMessage = `API error ${res.status}`;
+    try {
+      const json = await res.json();
+      if (json?.error) errorMessage = json.error;
+    } catch {
+      const text = await res.text();
+      if (text) errorMessage = text;
+    }
+
+    const error = new Error(errorMessage);
+    (error as any).status = res.status;
+    throw error;
+  }
 
   const data = await res.json();
 
   return data;
-  //return res;
 }

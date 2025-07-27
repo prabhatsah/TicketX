@@ -59,7 +59,6 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
       by: ["status"],
       _count: true,
     });
-    console.log(statusDist);
 
     res.json({
       totalTickets,
@@ -71,7 +70,6 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
       statusDist,
     });
   } catch (error) {
-    console.log("Dashboard error:", error);
     res.status(500).json(<APIError>{ message: "Internal server error" });
   }
 };
