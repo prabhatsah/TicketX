@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+
 import { GlobalSpinner } from "@/components/global-spinner";
 import { OrgSwitcher } from "@/components/org-switcher";
 import { Separator } from "@/components/ui/separator";
@@ -9,7 +10,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { LoadingProvider } from "@/context/LoadingContext";
-import { SessionProvider } from "@/context/session-context";
 import { Bell } from "lucide-react";
 
 export default function DashboardLayout({

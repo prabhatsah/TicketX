@@ -22,8 +22,6 @@ export function useOrgUsers(): UseOrgUsersResult {
     setLoading(true);
     setError(null);
     try {
-      console.log("baseUrl", baseUrl);
-
       const res = await fetch(`${baseUrl}/api/org/users`, {
         method: "GET",
         credentials: "include",

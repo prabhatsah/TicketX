@@ -1,12 +1,15 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
+import { isAuthPage } from "@/lib/utils";
 import { SessionUser } from "@shared/api/auth";
 import { OrgSummary } from "@shared/models/org";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface SessionData {
-  user: SessionUser;
+  userInfo: SessionUser;
   currentOrg: OrgSummary;
   organizations: OrgSummary[];
 }
@@ -41,6 +44,16 @@ export const SessionProvider = ({
         const json = await res.json();
         setSession(json.data);
       } else {
+        if (res.status === 401 && typeof window !== "undefined") {
+          toast.dismiss();
+          toast.error("Session expired.", {
+            description: "Redirecting to login...",
+          });
+
+          setTimeout(() => {
+            window.location.href = "/signin";
+          }, 2500); // Delay for toast
+        }
         setSession(null);
       }
     } catch (err) {
@@ -52,18 +65,22 @@ export const SessionProvider = ({
 
   const setSelectedOrg = async (orgId: string) => {
     try {
-      const response = await fetch(`${baseUrl}/api/auth/select-org`, {
+      // const response = await fetch(`${baseUrl}/api/auth/select-org`, {
+      //   method: "POST",
+      //   credentials: "include",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ orgId }),
+      // });
+
+      // if (!response.ok) {
+      //   throw new Error(
+      //     `Failed to switch organization: ${response.statusText}`
+      //   );
+      // }
+      await apiFetch("/api/auth/select-org", {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orgId }),
       });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to switch organization: ${response.statusText}`
-        );
-      }
 
       await new Promise((r) => setTimeout(r, 200)); //short wait to let cookie settle
       await fetchSession();
@@ -75,18 +92,21 @@ export const SessionProvider = ({
 
   const setSwitchOrg = async (orgId: string) => {
     try {
-      const response = await fetch(`${baseUrl}/api/auth/switch-org`, {
+      // const res = await fetch(`${baseUrl}/api/auth/switch-org`, {
+      //   method: "POST",
+      //   credentials: "include",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ orgId }),
+      // });
+
+      // if (!res.ok) {
+      //   throw new Error(`Failed to switch organization: ${res.statusText}`);
+      // }
+
+      await apiFetch("/api/auth/switch-org", {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orgId }),
       });
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to switch organization: ${response.statusText}`
-        );
-      }
 
       await new Promise((r) => setTimeout(r, 200)); //short wait to let cookie settle
       await fetchSession();
@@ -97,6 +117,8 @@ export const SessionProvider = ({
   };
 
   useEffect(() => {
+    // if (window.location.pathname === "/signin") return;
+    if (isAuthPage()) return;
     fetchSession();
   }, []);
 

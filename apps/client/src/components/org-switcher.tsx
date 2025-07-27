@@ -11,13 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Building2, Check, ChevronsUpDown } from "lucide-react";
 import { OrgSummary } from "@shared/models/org";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useSession } from "@/context/session-context";
+import { useLoading } from "@/context/LoadingContext";
+import { SessionExpiredError } from "@/lib/api";
 
 export function OrgSwitcher() {
-  const router = useRouter();
-  const { session, setSwitchOrg, isLoading } = useSession();
+  const { setLoading } = useLoading();
+  const { session, setSwitchOrg } = useSession();
 
   const currentOrg = session?.currentOrg;
   const sortedOrgs = session?.organizations;
@@ -26,20 +27,30 @@ export function OrgSwitcher() {
     if (!currentOrg || org.id === currentOrg.id) return;
 
     try {
+      setLoading(true);
       await setSwitchOrg(org.id); //  Switch org on server and update session
+
       toast.success("Organisation switched", {
         description: `Switched to ${org?.name}`,
       });
-      router.refresh(); //  Reload current route to reflect changes
+
+      //router.refresh(); //  Reload current route to reflect changes
     } catch (err: any) {
       console.log(err);
+
+      if (err instanceof SessionExpiredError) {
+        return;
+      }
+
       toast.error("Orgnization switch failed!", {
         description: err.message || "An unexpected error occurred",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (isLoading || !currentOrg || !sortedOrgs) return null;
+  if (!currentOrg || !sortedOrgs) return null;
 
   return (
     <DropdownMenu>

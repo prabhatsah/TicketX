@@ -37,6 +37,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 export default function UserManagementPage() {
@@ -179,41 +180,41 @@ export default function UserManagementPage() {
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="border-b">
           {users.map((u) => (
-            <TableRow key={u.id}>
+            <TableRow className="" key={u.id}>
               <TableCell>{u.name ?? u.email}</TableCell>
               <TableCell>{u.role}</TableCell>
               <TableCell className="flex space-x-2">
-                <Dialog>
-                  <DropdownMenu>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal />
-                      </Button>
-                    </DialogTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                      {(["ADMIN", "AGENT", "USER"] as User["role"][]).map(
-                        (r) => (
-                          <DropdownMenuItem
-                            key={r}
-                            onClick={() => handleRoleChange(u.id, r)}
-                          >
-                            {r}
-                          </DropdownMenuItem>
-                        )
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() => handleRemoveUser(u.id)}
-                      >
-                        Remove User
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </Dialog>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Change Role</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {(["ADMIN", "SUPPORT", "USER"] as User["role"][]).map(
+                      (r) => (
+                        <DropdownMenuItem
+                          className={u.role === r ? "bg-primary" : ""}
+                          key={r}
+                          onClick={() => handleRoleChange(u.id, r)}
+                        >
+                          {r}
+                        </DropdownMenuItem>
+                      )
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-red-600"
+                      onClick={() => handleRemoveUser(u.id)}
+                    >
+                      Remove User
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}

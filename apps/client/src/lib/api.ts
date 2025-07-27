@@ -1,5 +1,14 @@
 import { toast } from "sonner";
 
+export class SessionExpiredError extends Error {
+  constructor() {
+    super("Session expired");
+    this.name = "SessionExpiredError";
+  }
+}
+
+let sessionExpired = false;
+
 export async function apiFetch<T>(
   endpoint: string,
   options?: RequestInit
@@ -15,21 +24,37 @@ export async function apiFetch<T>(
     credentials: "include", // Important for secure cookie auth
   });
 
-  if (!res.ok) {
-    if (res.status === 401) {
-      if (typeof window !== "undefined") {
-        // Prevent multiple toasts
-        toast.dismiss();
-        toast.error("Session expired.", {
-          description: "Redirecting to login page.",
-        });
+  if (res.status === 401 && typeof window !== "undefined") {
+    if (!sessionExpired) {
+      sessionExpired = true;
 
-        setTimeout(() => {
-          window.location.href = "/signin";
-        }, 2500); // give time for toast to show
-      }
+      toast.dismiss();
+      toast.error("Session expired.", {
+        description: "Redirecting to login...",
+      });
+
+      setTimeout(() => {
+        window.location.href = "/signin";
+      }, 2500);
     }
+    throw new SessionExpiredError();
+  }
 
+  // Try to extract JSON error
+  // let errorMessage = `API error ${res.status}`;
+  // try {
+  //   const json = await res.json();
+  //   if (json?.error) errorMessage = json.error;
+  // } catch {
+  //   const text = await res.text();
+  //   if (text) errorMessage = text;
+  // }
+
+  // const error = new Error(errorMessage);
+  // (error as any).status = res.status;
+  // throw error;
+
+  if (!res.ok) {
     // Try to extract JSON error
     let errorMessage = `API error ${res.status}`;
     try {

@@ -56,7 +56,7 @@ export function LoginForm({
       } else {
         await refreshSession(); //  fetch /me and set global session
 
-        router.push("/");
+        router.push("/home");
       }
 
       toast.success("Login successful", {
@@ -76,7 +76,7 @@ export function LoginForm({
     if (pendingUser) {
       await setSelectedOrg(org.id); //properly persist org switch on server and update session
       setModalOpen(false);
-      router.push("/");
+      router.push("/home");
     }
   };
 
