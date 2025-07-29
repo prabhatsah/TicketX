@@ -9,5 +9,7 @@ export function requireOrg(req: Request, res: Response, next: NextFunction) {
     } satisfies APIError);
   }
 
+  //console.log("req in requireOrg", req.userInfo);
+
   next();
 }

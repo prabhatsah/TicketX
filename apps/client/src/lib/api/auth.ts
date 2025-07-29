@@ -1,5 +1,5 @@
 import { LoginResult } from "@shared/api/auth";
-import { apiFetch } from "./api";
+import { apiFetch } from "../api";
 
 export async function login(
   email: string,

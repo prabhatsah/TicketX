@@ -10,11 +10,11 @@ export const requireAuth = (
   next: NextFunction
 ) => {
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ error: "Unauthorized1" });
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as Partial<SessionUser>;
-    // console.log("Decoded in requireAuth", decoded);
+    //console.log("Decoded in requireAuth", decoded);
 
     // Validate that all required properties exist
     if (

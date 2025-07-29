@@ -23,7 +23,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { logout } from "@/lib/auth";
+import { logout } from "@/lib/api/auth";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 

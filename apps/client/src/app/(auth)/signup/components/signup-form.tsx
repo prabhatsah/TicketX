@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { signup } from "@/lib/auth";
+import { signup } from "@/lib/api/auth";
 
 export function SignupForm({
   className,

@@ -39,12 +39,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { updateRole } from "@/lib/api/users/updateRole";
+import { useLoading } from "@/context/LoadingContext";
 
 export default function UserManagementPage() {
   const { users, loading, error, refresh } = useOrgUsers();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<User["role"]>("USER");
+  const { setLoading } = useLoading();
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
@@ -70,20 +73,21 @@ export default function UserManagementPage() {
 
   async function handleRoleChange(userId: string, newRole: User["role"]) {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${userId}/role`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ role: newRole }),
-        }
-      );
-      if (!res.ok) throw new Error("Role update failed");
-      toast.success("Role updated");
-      await refresh();
+      setLoading(true);
+      const res = await updateRole(userId, newRole);
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      toast.success(`${res.message}`, {
+        description: `Changed to ${newRole}`,
+      });
+
+      setLoading(false);
     } catch (err: any) {
       toast.error("Role update failed", { description: err.message });
+      toast.error("Role update failed", {
+        description: ` ${err.message}`,
+      });
     }
   }
 
