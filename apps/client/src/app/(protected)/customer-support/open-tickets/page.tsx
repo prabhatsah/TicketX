@@ -1,8 +1,9 @@
 "use client";
 import { SectionCards } from "@/components/section-cards";
-import { DataTable } from "./components/data-table-modifiled";
+import { DataTable, OpenTicketTable } from "./components/data-table-modifiled";
 
 import data from "../data.json";
+import TicketsTable from "./components/ticketsTable";
 
 const Page = () => {
   return (
@@ -12,7 +13,7 @@ const Page = () => {
           <SectionCards />
         </div>
         <div className="px-4 py-2">
-          <DataTable data={data} />
+          <OpenTicketTable data={data} />
         </div>
       </div>
     </div>

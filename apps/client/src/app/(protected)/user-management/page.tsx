@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { updateRole } from "@/lib/api/users/updateRole";
 import { useLoading } from "@/context/LoadingContext";
+import { removeUserFromOrg } from "@/lib/api/users/removeUserFromOrg";
 
 export default function UserManagementPage() {
   const { users, loading, error, refresh } = useOrgUsers();
@@ -76,35 +77,37 @@ export default function UserManagementPage() {
       setLoading(true);
       const res = await updateRole(userId, newRole);
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+
+      await refresh();
 
       toast.success(`${res.message}`, {
         description: `Changed to ${newRole}`,
       });
-
-      setLoading(false);
     } catch (err: any) {
-      toast.error("Role update failed", { description: err.message });
-      toast.error("Role update failed", {
+      toast.error("Role update failed!", {
         description: ` ${err.message}`,
       });
+    } finally {
+      setLoading(false);
     }
   }
 
   async function handleRemoveUser(userId: string) {
+    setLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/${userId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-      if (!res.ok) throw new Error("Remove failed");
-      toast.success("User removed");
+      const res = await removeUserFromOrg(userId);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
       await refresh();
+      toast.success("User removed", { description: res.message });
     } catch (err: any) {
-      toast.error("User removal failed", { description: err.message });
+      toast.error("User removal failed!", { description: err.message });
+    } finally {
+      setLoading(false);
     }
   }
 

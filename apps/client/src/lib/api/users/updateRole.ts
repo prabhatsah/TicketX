@@ -13,5 +13,6 @@ export const updateRole = async (userId: string, role: Role) => {
     return res;
   } catch (err: any) {
     console.log("Role update failed", err.message);
+    throw err;
   }
 };

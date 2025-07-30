@@ -11,17 +11,15 @@ export async function updateUserRole(req: Request, res: Response) {
   const orgId = req.userInfo.orgId;
 
   if (!userId || !role || !orgId) {
-    return res.status(400).json({ message: "Invalid request" });
+    return res.status(400).json({ error: "Invalid request" });
   }
 
   if (!["ADMIN", "SUPPORT", "USER"].includes(role)) {
-    return res.status(400).json({ message: "Invalid role" });
+    return res.status(400).json({ error: "Invalid role" });
   }
 
   if (userId === req.userInfo.userId) {
-    return res
-      .status(403)
-      .json({ message: "You cannot change your own role." });
+    return res.status(403).json({ error: "You cannot change your own role." });
   }
 
   const membership = await Prisma.membership.findFirst({
@@ -34,7 +32,7 @@ export async function updateUserRole(req: Request, res: Response) {
   if (!membership) {
     return res
       .status(404)
-      .json({ message: "User doesn't belong to organization" });
+      .json({ error: "User doesn't belong to organization" });
   }
 
   await Prisma.membership.update({
@@ -45,4 +43,40 @@ export async function updateUserRole(req: Request, res: Response) {
   });
 
   return res.status(200).json({ success: true, message: "Role updated" });
+}
+
+export async function removeUserFromOrg(req: Request, res: Response) {
+  const { userId } = req.params;
+
+  const orgId = req.userInfo.orgId;
+
+  if (!userId || !orgId) {
+    return res.status(400).json({ success: false, error: "Invalid request" });
+  }
+
+  if (userId === req.userInfo.userId) {
+    return res
+      .status(403)
+      .json({ success: false, error: "You cannot remove yourself" });
+  }
+
+  try {
+    await Prisma.membership.delete({
+      where: {
+        userId_organizationId: {
+          userId: userId,
+          organizationId: orgId,
+        },
+      },
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "User remove from the organization" });
+  } catch (err) {
+    return res.status(404).json({
+      success: false,
+      message: "Membership not found or already removed",
+    });
+  }
 }
